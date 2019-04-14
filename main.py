@@ -18,60 +18,91 @@ directory = "/home/lulwat/Documents/IMT/S4/face-database/"
 preselection_file = "/home/lulwat/Documents/IMT/S4/test-set.csv"
 
 # Make a dictionary with all the preselected directories as keys and their content as values
-directories = dict()
+list_of_pictures = list()
 with open(preselection_file) as fp:
     issues = []
     lines = fp.readlines()
     for line in lines:
-        name = line.split(",")[0].strip() + '/'
+        name = line.split(",")[0].strip()
         try:
             file_list = os.listdir(directory + name)
-            print(file_list)
-            directories[name] = list()
             for file in file_list:
-                directories[name].append(directory + name + file)
+                list_of_pictures.append((name, directory + name + '/' + file))
 
         except FileNotFoundError:
             issues.append(name)
+
+
 #  TODO : fix the encoding issue (optional)
 #  TODO : add the possibility to fix the name in the file and the directory (optional)
-print("There were issues with theses files :", issues)
+#  TODO : log the issues in a text file instead
 
 
 class MyApp:
-    def validate(self, i):
-        print(i)
+    def validate(self, button_value):
+        self.update_photo()
+        # results.append(filename, person_name, button_value)
+
+    def update_photo(self):
+        """
+        Update the picture displayed
+        :return: None
+        """
+        if self.current_picture_number < self.max_picture_number:
+            self.current_picture_number += 1
+            self.current_name, self.current_filepath = list_of_pictures[self.current_picture_number]
+        else:
+            #  TODO : make the GUI announce the completion
+            print("All files were explored")
+
+        image = Image.open(self.current_filepath)
+        h, w = image.height, image.width
+        ratio = w / h
+        image = image.resize((int(round(800 * ratio)), 800))
+
+        photo = ImageTk.PhotoImage(image)
+        self.image.configure(image=photo)
+        self.image.image = photo
+        self.update_text()
+
+    def update_text(self):
+        """
+        Update the text displayed, to show the next ticket pair
+        :return: None
+        """
+        self.text.config(text="Est-ce que cette photo représente bien {}".format(self.current_name))
 
     def __init__(self, parent):
-        self.results = []
+        # Initialize the variables about the image displayed
         self.parent = parent  # The parent Tk application
-        # We give all the rows the same non-zero weight so that they scale with the window
+        self.current_name = ""
+        self.current_filepath = ""
+        self.max_picture_number = len(list_of_pictures) - 1
+        self.current_picture_number = -1
+
+        # Give all the rows the same non-zero weight so that they scale with the window
         self.parent.rowconfigure(0, weight=1)
         self.parent.rowconfigure(1, weight=1)  # We add an empty row for design purposes
         self.parent.rowconfigure(2, weight=1)
 
-        filename = "/home/lulwat/Documents/IMT/S4/face-database/a.j. hinch/newsml.afp.com.20180221.PH.GTY.922314274.png"
-        image = Image.open(filename)
-        image = image.resize((800,800))
-        photo = ImageTk.PhotoImage(image)
-
-        self.label = tk.Label(image=photo)
-        self.label.image = photo
-        self.label.grid(row=0, column=0, columnspan=2)
-        # self.display = tk.Canvas(self.parent, width=w, height=h)
-        # self.display.pack()
-        # self.display.create_image(0, 0, image=photo)
-
-        # self.display.grid(row=0, column=0)
-        true = tk.Button(self.parent, text="True", command=partial(self.validate, True))
-        false = tk.Button(self.parent, text="False", command=partial(self.validate, False))
-        self.parent.columnconfigure(0, weight=1)
-        self.parent.columnconfigure(1, weight=1)
+        #  Configure image and buttons widgets
+        self.image = tk.Label()
+        self.image.grid(row=0, column=0, columnspan=2)
+        true = tk.Button(self.parent, text="Oui", command=partial(self.validate, True))
+        false = tk.Button(self.parent, text="Non", command=partial(self.validate, False))
         true.grid(row=2, column=0, columnspan=1, sticky="nswe")
         false.grid(row=2, column=1, columnspan=1, sticky="nswe")
+        self.parent.columnconfigure(0, weight=1)
+        self.parent.columnconfigure(1, weight=1)
+
+        # Configure text widget
+        self.text = tk.Label(parent, text="Est-ce que cette photo représente bien {}".format(self.current_name))
+        self.text.grid(row=1, column=0, columnspan=2)
 
 
 root = Tk()
 root.title('Test UI')
+root.attributes("-zoomed", True)
 myapp = MyApp(root)
+
 root.mainloop()
