@@ -1,12 +1,13 @@
-from tkinter import Tk, Image
+from tkinter import Tk
+from PIL import ImageTk, Image
 import tkinter as tk
 from functools import partial
 import os
 from tkinter.filedialog import askopenfilename, askdirectory
+import cv2
 
-Tk().withdraw()
 # TODO : Make interface explain that the choice is for the face_database directory location
-# Provide the location of the database of pictures
+#  Provide the location of the database of pictures
 # directory = askdirectory() + '/'
 directory = "/home/lulwat/Documents/IMT/S4/face-database/"
 
@@ -16,16 +17,20 @@ directory = "/home/lulwat/Documents/IMT/S4/face-database/"
 # preselection_file = askopenfilename()
 preselection_file = "/home/lulwat/Documents/IMT/S4/test-set.csv"
 
-
 # Make a dictionary with all the preselected directories as keys and their content as values
 directories = dict()
 with open(preselection_file) as fp:
     issues = []
     lines = fp.readlines()
     for line in lines:
-        name = line.split(",")[0].strip()
+        name = line.split(",")[0].strip() + '/'
         try:
-            directories[name] = os.listdir(directory + name)
+            file_list = os.listdir(directory + name)
+            print(file_list)
+            directories[name] = list()
+            for file in file_list:
+                directories[name].append(directory + name + file)
+
         except FileNotFoundError:
             issues.append(name)
 #  TODO : fix the encoding issue (optional)
@@ -33,38 +38,40 @@ with open(preselection_file) as fp:
 print("There were issues with theses files :", issues)
 
 
-
-class MyApp :
+class MyApp:
     def validate(self, i):
         print(i)
+
     def __init__(self, parent):
         self.results = []
         self.parent = parent  # The parent Tk application
-        # self.experiences = experiences  # The experience set
-        # self.tickets = tickets  # The ticket dictionary
-        # self.number_of_tickets = number_of_tickets
-        # self.current_ticket_couple = -1
-        # self.ticket_a = None  # Contains ticket id
-        # self.ticket_b = None  # Contains ticket id
-        # self.similarity = None
-        # self.text_a = None
-        # self.text_b = None
         # We give all the rows the same non-zero weight so that they scale with the window
         self.parent.rowconfigure(0, weight=1)
         self.parent.rowconfigure(1, weight=1)  # We add an empty row for design purposes
         self.parent.rowconfigure(2, weight=1)
-        self.text_top = tk.Text(self.parent, wrap=tk.WORD)  # The wrap=WORD option avoids newline in the middle of words
-        self.text_top.grid(row=0, column=0, columnspan=11, sticky="nswe")
-        button_values = [(str(i), i) for i in range(11)]
-        for text, integer in button_values:
-            b = tk.Button(self.parent, text=text, command=partial(self.validate, integer))
-            self.parent.columnconfigure(integer, weight=1)
-            b.grid(row=2, column=integer, columnspan=1, sticky="nswe")
+
+        filename = "/home/lulwat/Documents/IMT/S4/face-database/a.j. hinch/newsml.afp.com.20180221.PH.GTY.922314274.png"
+        image = Image.open(filename)
+        image = image.resize((800,800))
+        photo = ImageTk.PhotoImage(image)
+
+        self.label = tk.Label(image=photo)
+        self.label.image = photo
+        self.label.grid(row=0, column=0, columnspan=2)
+        # self.display = tk.Canvas(self.parent, width=w, height=h)
+        # self.display.pack()
+        # self.display.create_image(0, 0, image=photo)
+
+        # self.display.grid(row=0, column=0)
+        true = tk.Button(self.parent, text="True", command=partial(self.validate, True))
+        false = tk.Button(self.parent, text="False", command=partial(self.validate, False))
+        self.parent.columnconfigure(0, weight=1)
+        self.parent.columnconfigure(1, weight=1)
+        true.grid(row=2, column=0, columnspan=1, sticky="nswe")
+        false.grid(row=2, column=1, columnspan=1, sticky="nswe")
 
 
 root = Tk()
 root.title('Test UI')
-# root.state('zoomed')
 myapp = MyApp(root)
 root.mainloop()
-
