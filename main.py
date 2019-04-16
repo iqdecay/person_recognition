@@ -45,29 +45,34 @@ class MyApp:
         self.update_photo()
         self.results[self.current_filepath] = button_value
 
-    def update_photo(self, quit):
+    def update_photo(self, quit_and_save=False):
         """
         Update the picture displayed
         :quit : boolean, True if the quit button was pressed
         :return: None
         """
-        if self.current_picture_number < self.max_picture_number or quit :
+        if self.current_picture_number < self.max_picture_number and not quit_and_save:
             self.current_picture_number += 1
             self.current_name, self.current_filepath = list_of_pictures[self.current_picture_number]
+            image = Image.open(self.current_filepath)
+            h, w = image.height, image.width
+            ratio = w / h
+            image = image.resize((int(round(800 * ratio)), 800))
+            photo = ImageTk.PhotoImage(image)
+            self.image.configure(image=photo)
+            self.image.image = photo
+            self.update_text()
+
+        elif quit_and_save:
+            # TODO : make the GUI announce quitting and saving
+            self.results["last_picture_treated"] = self.current_picture_number
+            file_save(self.results)
+            print("Results saved")
+            self.parent.quit()
+
         else:
             #  TODO : make the GUI announce the completion
             print("All files were explored")
-            file_save(self.results)
-
-        image = Image.open(self.current_filepath)
-        h, w = image.height, image.width
-        ratio = w / h
-        image = image.resize((int(round(800 * ratio)), 800))
-
-        photo = ImageTk.PhotoImage(image)
-        self.image.configure(image=photo)
-        self.image.image = photo
-        self.update_text()
 
     def update_text(self):
         """
@@ -92,19 +97,33 @@ class MyApp:
         self.parent.rowconfigure(1, weight=1)  # We add an empty row for design purposes
         self.parent.rowconfigure(2, weight=1)
 
+        # Add a quit and save button
+        quit_and_save = tk.Button(self.parent, text="Quit and save", command=partial(self.update_photo, True))
+        quit_and_save.grid(row=2, column=1)
+
         #  Configure image and buttons widgets
         self.image = tk.Label()
-        self.image.grid(row=0, column=0, columnspan=2)
+        self.image.grid(row=0, column=0, columnspan=3)
         true = tk.Button(self.parent, text="Oui", command=partial(self.validate, True))
         false = tk.Button(self.parent, text="Non", command=partial(self.validate, False))
         true.grid(row=2, column=0, columnspan=1, sticky="nswe")
-        false.grid(row=2, column=1, columnspan=1, sticky="nswe")
+        false.grid(row=2, column=2, columnspan=1, sticky="nswe")
         self.parent.columnconfigure(0, weight=1)
         self.parent.columnconfigure(1, weight=1)
+        self.parent.columnconfigure(2, weight=1)
 
         # Configure text widget
         self.text = tk.Label(parent, text="Est-ce que cette photo représente bien {}".format(self.current_name))
         self.text.grid(row=1, column=0, columnspan=2)
+
+        # Load previous results to resume where we stopped
+        try:
+            print("Loading previous results")
+            with open("results.pkl", "rb") as f:
+                self.results = pickle.load(f)
+                self.current_picture_number = self.results["last_picture_treated"]
+        except FileNotFoundError:
+            print("No previous results found, starting from 0")
 
 
 def file_save(content):
