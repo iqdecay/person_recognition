@@ -3,10 +3,12 @@ from PIL import ImageTk, Image
 import tkinter as tk
 from functools import partial
 import os
-from tkinter.filedialog import askopenfilename, askdirectory
+import pickle
+from tkinter.filedialog import askopenfilename, askdirectory, asksaveasfile
 import cv2
 
 # TODO : Make interface explain that the choice is for the face_database directory location
+# TODO : take back the location of the face_database is already defined and ask for confirmation
 #  Provide the location of the database of pictures
 # directory = askdirectory() + '/'
 directory = "/home/lulwat/Documents/IMT/S4/face-database/"
@@ -41,19 +43,21 @@ with open(preselection_file) as fp:
 class MyApp:
     def validate(self, button_value):
         self.update_photo()
-        # results.append(filename, person_name, button_value)
+        self.results[self.current_filepath] = button_value
 
-    def update_photo(self):
+    def update_photo(self, quit):
         """
         Update the picture displayed
+        :quit : boolean, True if the quit button was pressed
         :return: None
         """
-        if self.current_picture_number < self.max_picture_number:
+        if self.current_picture_number < self.max_picture_number or quit :
             self.current_picture_number += 1
             self.current_name, self.current_filepath = list_of_pictures[self.current_picture_number]
         else:
             #  TODO : make the GUI announce the completion
             print("All files were explored")
+            file_save(self.results)
 
         image = Image.open(self.current_filepath)
         h, w = image.height, image.width
@@ -80,6 +84,9 @@ class MyApp:
         self.max_picture_number = len(list_of_pictures) - 1
         self.current_picture_number = -1
 
+        # Initialize login
+        self.results = dict()
+
         # Give all the rows the same non-zero weight so that they scale with the window
         self.parent.rowconfigure(0, weight=1)
         self.parent.rowconfigure(1, weight=1)  # We add an empty row for design purposes
@@ -100,9 +107,18 @@ class MyApp:
         self.text.grid(row=1, column=0, columnspan=2)
 
 
+def file_save(content):
+    new_file = asksaveasfile(mode='wb', defaultextension=".pkl")
+    if file is None:
+        return
+    pickle.dump(content, new_file, -1)
+    new_file.close()
+
+
 root = Tk()
 root.title('Test UI')
 root.attributes("-zoomed", True)
+
 myapp = MyApp(root)
 
 root.mainloop()
