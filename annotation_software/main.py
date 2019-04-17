@@ -5,16 +5,19 @@ from functools import partial
 import os
 import pickle
 from tkinter.filedialog import askopenfilename, askdirectory, asksaveasfile
-from tkinter.messagebox import showinfo
+from tkinter.messagebox import showinfo, showerror
 import cv2
 
 root = Tk()
 root.title("Application d'annotation")
 root.attributes("-zoomed", True)
-# TODO : take back the location of the face_database is already defined and ask for confirmation
+# TODO : take back the location of the face_database if already defined and ask for confirmation
 #  Provide the location of the database of pictures
-directory = askdirectory(parent=root, title="Select location of the face_database directory") + '/'
-# directory = "/home/lulwat/Documents/IMT/S4/face-database/"
+while "face-database" not in directory :
+    showerror("Wrong location", "Make sure the location is correct and the name is 'face-database'")
+    directory = askdirectory(parent=root, title="Select location of the face_database directory") + '/'
+
+
 
 preselection_file = "test-set.csv"
 
@@ -70,6 +73,7 @@ class MyApp:
             self.parent.quit()
 
         else:
+
             #  TODO : make the GUI announce the completion
             print("All files were explored")
 
@@ -112,7 +116,8 @@ class MyApp:
         self.parent.columnconfigure(2, weight=1)
 
         # Configure text widget
-        self.text = tk.Label(parent, text="Est-ce que cette photo représente bien {}".format(self.current_name))
+        self.text = tk.Label(parent, text="Merci de cliquer sur un des deux boutons pour commencer")
+        self.text.configure(anchor="center")
         self.text.grid(row=1, column=0, columnspan=2)
 
         # Load previous results to resume where we stopped
@@ -127,7 +132,7 @@ class MyApp:
 
 def file_save(content):
     filename = "results.pkl"
-    with open(filename, "wb") as file :
+    with open(filename, "wb") as file:
         pickle.dump(content, file, -1)
 
 
