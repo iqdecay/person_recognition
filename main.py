@@ -5,15 +5,16 @@ from functools import partial
 import os
 import pickle
 from tkinter.filedialog import askopenfilename, askdirectory, asksaveasfile
+from tkinter.messagebox import showinfo
 import cv2
 
-# TODO : Make interface explain that the choice is for the face_database directory location
+root = Tk()
+root.title("Application d'annotation")
+root.attributes("-zoomed", True)
 # TODO : take back the location of the face_database is already defined and ask for confirmation
 #  Provide the location of the database of pictures
-# directory = askdirectory() + '/'
-directory = "/home/lulwat/Documents/IMT/S4/face-database/"
-
-# TODO : Make interface explain that the choice is for the list of directories
+directory = askdirectory(parent=root, title="Select location of the face_database directory") + '/'
+# directory = "/home/lulwat/Documents/IMT/S4/face-database/"
 
 preselection_file = "test-set.csv"
 
@@ -62,7 +63,7 @@ class MyApp:
             self.update_text()
 
         elif quit_and_save:
-            # TODO : make the GUI announce quitting and saving
+            showinfo("Save and quit", "Saving the results under results.pkl and quitting")
             self.results["last_picture_treated"] = self.current_picture_number
             file_save(self.results)
             print("Results saved")
@@ -125,16 +126,10 @@ class MyApp:
 
 
 def file_save(content):
-    new_file = asksaveasfile(mode='wb', defaultextension=".pkl")
-    if file is None:
-        return
-    pickle.dump(content, new_file, -1)
-    new_file.close()
+    filename = "results.pkl"
+    with open(filename, "wb") as file :
+        pickle.dump(content, file, -1)
 
-
-root = Tk()
-root.title('Test UI')
-root.attributes("-zoomed", True)
 
 myapp = MyApp(root)
 
