@@ -15,9 +15,7 @@ directory = "/home/lulwat/Documents/IMT/S4/face-database/"
 
 # TODO : Make interface explain that the choice is for the list of directories
 
-# Provide the location of the file containing the preselected folders under CSV form
-# preselection_file = askopenfilename()
-preselection_file = "/home/lulwat/Documents/IMT/S4/test-set.csv"
+preselection_file = "test-set.csv"
 
 # Make a dictionary with all the preselected directories as keys and their content as values
 list_of_pictures = list()
