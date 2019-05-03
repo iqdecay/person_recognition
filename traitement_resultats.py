@@ -4,7 +4,7 @@ import os.path
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import showerror, showinfo
 
-with open("new_results.pkl", "rb") as file:
+with open("results.pkl", "rb") as file:
     results = pickle.load(file)
 
 root = Tk()
