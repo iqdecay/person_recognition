@@ -13,28 +13,39 @@ root.title("Application d'annotation")
 root.attributes("-zoomed", True)
 # TODO : take back the location of the face_database if already defined and ask for confirmation
 #  Provide the location of the database of pictures
-while "face-database" not in directory :
-    showerror("Wrong location", "Make sure the location is correct and the name is 'face-database'")
-    directory = askdirectory(parent=root, title="Select location of the face_database directory") + '/'
-
-
+directory = askdirectory(title="Locate the folder containing 'face-database'")
+while "face-database" not in os.listdir(directory):
+    showerror("Wrong location", "Make sure the selected folder contains 'face-database'")
+    directory = askdirectory(title="Locate the folder containing 'face-database'")
+directory = os.path.join(directory, "face-database")
+print(directory)
 
 preselection_file = "test-set.csv"
 
 # Make a dictionary with all the preselected directories as keys and their content as values
 list_of_pictures = list()
-with open(preselection_file) as fp:
-    issues = []
-    lines = fp.readlines()
-    for line in lines:
-        name = line.split(",")[0].strip()
-        try:
-            file_list = os.listdir(directory + name)
-            for file in file_list:
-                list_of_pictures.append((name, directory + name + '/' + file))
+try:
+    with open(preselection_file) as fp:
+        issues = []
+        lines = fp.readlines()
+        number_of_pictures = 0
+        for line in lines:
+            print(line)
+            # The line is under in the format "name, n" where n is the number of picture in the corresponding folder
+            name = line.split(",")[0].strip()
+            try:
+                person_directory = os.path.join(directory, name)
+                file_list = os.listdir(person_directory)
+                for file in file_list:
+                    number_of_pictures += 1
+                    file_path = os.path.join(person_directory, file)
+                    list_of_pictures.append((name, file_path))
 
-        except FileNotFoundError:
-            issues.append(name)
+            except FileNotFoundError:
+                issues.append(name)
+    print("{} preselected picture were found, and there was {} issues".format(number_of_pictures, len(issues)))
+except FileNotFoundError:
+    print("The preselection file was not found !")
 
 
 #  TODO : fix the encoding issue (optional)
@@ -45,7 +56,9 @@ with open(preselection_file) as fp:
 class MyApp:
     def validate(self, button_value):
         self.update_photo()
-        self.results[self.current_filepath] = button_value
+        # Remove absolute path
+        current_picture = os.path.normpath(self.current_filepath.replace(directory, ""))
+        self.results[current_picture] = button_value
 
     def update_photo(self, quit_and_save=False):
         """
