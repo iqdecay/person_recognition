@@ -98,7 +98,7 @@ class MyApp:
             showinfo("Save and quit", "Saving the results under results.pkl and quitting")
             self.results["last_picture_treated"] = self.current_picture_number
             file_save(self.results)
-            for k,v in self.results.items() :
+            for k, v in self.results.items():
                 print(k, v)
             print("Results saved")
             self.parent.quit()
@@ -157,7 +157,7 @@ class MyApp:
         self.parent.bind("<Right>", partial(self.validate_keyboard, False))
 
         # Configure text widget
-        self.text = tk.Label(parent, text="Merci de cliquer sur un des deux boutons pour commencer")
+        self.text = tk.Label(parent, text="")
         self.text.configure(anchor="center")
         self.text.grid(row=1, column=1, columnspan=2)
 
@@ -169,6 +169,9 @@ class MyApp:
                 self.current_picture_number = self.results["last_picture_treated"]
         except FileNotFoundError:
             print("No previous results found, starting from 0")
+
+        #  Show the first picture
+        self.update_photo()
 
 
 def file_save(content):
