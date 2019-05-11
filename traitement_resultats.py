@@ -23,3 +23,4 @@ for key in results.keys():
     local_results[local_path] = results[key]
 with open("local_results.pkl", "wb") as file:
     pickle.dump(local_results, file, -1)
+showinfo("Success", "The data was successfully treated and made compatible with the local path")
